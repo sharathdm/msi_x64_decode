@@ -1,0 +1,22 @@
+diff --git a/Makefile b/Makefile
+index e2e3bd7..73a7e6d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -66,7 +66,7 @@ PCIINC_INS=lib/config.h lib/header.h lib/pci.h lib/types.h
+ 
+ export
+ 
+-all: lib/$(PCIIMPLIB) lspci$(EXEEXT) setpci$(EXEEXT) example$(EXEEXT) lspci.8 setpci.8 pcilib.7 pci.ids.5 update-pciids update-pciids.8 $(PCI_IDS)
++all: lib/$(PCIIMPLIB) msi_x86_dec$(EXEEXT) lspci$(EXEEXT) setpci$(EXEEXT) example$(EXEEXT) lspci.8 setpci.8 pcilib.7 pci.ids.5 update-pciids update-pciids.8 $(PCI_IDS)
+ 
+ lib/$(PCIIMPLIB): $(PCIINC) force
+ 	$(MAKE) -C lib all
+@@ -108,6 +108,8 @@ update-pciids: update-pciids.sh
+ # The example of use of libpci
+ example$(EXEEXT): example.o lib/$(PCIIMPLIB)
+ example.o: example.c $(PCIINC)
++msi_x86_dec$(EXEEXT): msi_x86_dec.o lib/$(PCIIMPLIB)
++msi_x86_dec.o: msi_x86_dec.c $(PCIINC)
+ 
+ %$(EXEEXT): %.o
+ 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
