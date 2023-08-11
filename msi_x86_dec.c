@@ -56,6 +56,9 @@
 #define MSI_ADDR_IR_INDEX1(index)	((index & 0x8000) >> 13)
 #define MSI_ADDR_IR_INDEX2(index)	((index & 0x7fff) << 5)
 
+#define  PCI_MSIX_TABLE_BIR	0x00000007 /* BAR index */
+#define  PCI_MSIX_TABLE_OFFSET	0xfffffff8
+
 typedef uint8_t byte;
 typedef uint16_t word;
 
@@ -156,7 +159,9 @@ show_msi(struct device *d, int where, int cap)
 static void
 show_msix(struct device *d, int where, int cap, char *argv[])
 {
+/* https://zhuanlan.zhihu.com/p/50785797 */
     unsigned int table_bir = 0x0;
+    unsigned int table_offset = 0x0;
     int fd;
     int *ptr;
     char file_name[100];
@@ -164,6 +169,8 @@ show_msix(struct device *d, int where, int cap, char *argv[])
     u32 address_hi, address_lo;
     u32 data;
     int i=0;
+
+    printf("where = %x\n",where);
 
     printf("Message Signalled Interrupts X:  table size=%d Enable%c\n",
 	 (cap & PCI_MSIX_TABSIZE) + 1,
@@ -176,7 +183,9 @@ show_msix(struct device *d, int where, int cap, char *argv[])
 	  return ;
     }
 
-    table_bir = get_conf_byte(d, where + 0x4) & 0x7;
+    table_bir = get_conf_byte(d, where + 0x4) & PCI_MSIX_TABLE_BIR;
+    table_offset = get_conf_long(d, where + 0x4) & PCI_MSIX_TABLE_OFFSET;
+    printf("offset %x\n", table_offset);
 
     sprintf(file_name,"/sys/bus/pci/devices/0000\:%c%c\:%c%c.%c/resource%d",argv[1][0],argv[1][1],argv[1][3],argv[1][4],argv[1][6], table_bir);
 
@@ -184,7 +193,7 @@ show_msix(struct device *d, int where, int cap, char *argv[])
     fd = open(file_name, O_RDWR | O_SYNC);
     if (fd) {
         u32 *mptr;
-        ptr = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        ptr = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, (size_t)table_offset);
 
         mptr = ptr;
 	for (i=0; i<((cap & PCI_MSIX_TABSIZE) + 1); i++) {
