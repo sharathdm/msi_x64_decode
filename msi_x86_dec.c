@@ -100,7 +100,7 @@ static void print_msi(u32 address_hi, u32 address_lo, u32 data) {
   if(address_lo & MSI_ADDR_IR_EXT_INT) {
       printf("SubHandleValid=%s\n", (address_lo & MSI_ADDR_IR_SHV) ? "1" : "0");
       interrupt_index = (address_lo & 0xfffff) >> 5;
-      interrupt_index |= ((address_lo & 0x4) << 17);
+      interrupt_index |= ((address_lo & 0x4) << 13);
       if(address_lo & MSI_ADDR_IR_SHV) {
           printf("int_index = %d\n",( interrupt_index + (data & 0xffff) ) );
       } else {
